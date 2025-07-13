@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./index.js"></script>
+</head>
+
+<body>
+    <div>Hello server</div>
+    <button id="attach-one">Attach listener</button>
+    <button id="custom-button">Original event</button>
+    <button id="remove-event">Remove listener</button>
+    <script>
+        const removeEventFromCustom = easyEventListener('#attach-one', 'click', () => {
+            console.log("attached");
+
+            easyEventListener('#custom-button', 'click', (e) => {
+                console.log(e, 'hi clicked');
+            });
+
+        });
+
+        easyEventListener('#remove-event', 'click', () => {
+            console.log('removed');
+
+            easyEventListener.remove('#custom-button', 'click');
+        });
+    </script>
+</body>
+
+</html>
