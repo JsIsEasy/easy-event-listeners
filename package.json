@@ -1,0 +1,28 @@
+{
+  "name": "easy-events",
+  "version": "1.0.0",
+  "description": "The easiest way to add or remove event listener from an element.",
+  "type": "module",
+  "main": "./dist/lib/index.js",
+  "types": "./dist/dts/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/dts/index.d.ts",
+      "import": "./dist/lib/index.js",
+      "default": "./dist/lib/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "test": "vitest run"
+  },
+  "author": "karan nakra <karannakra1@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
