@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="./index.js"></script>
+    <title>easy-events example</title>
 </head>
 
 <body>
@@ -13,14 +12,15 @@
     <button id="attach-one">Attach listener</button>
     <button id="custom-button">Original event</button>
     <button id="remove-event">Remove listener</button>
-    <script>
-        const removeEventFromCustom = easyEventListener('#attach-one', 'click', () => {
+    <script type="module">
+        import { easyEventListener } from '../dist/lib/index.js';
+
+        easyEventListener('#attach-one', 'click', () => {
             console.log("attached");
 
             easyEventListener('#custom-button', 'click', (e) => {
                 console.log(e, 'hi clicked');
             });
-
         });
 
         easyEventListener('#remove-event', 'click', () => {
