@@ -4,30 +4,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>easy-events example</title>
+    <title>easy-events comparison</title>
+    <style>
+        :root {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #172033;
+            background: #f6f8fb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px;
+        }
+
+        main {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.4rem;
+            line-height: 1.1;
+        }
+
+        .intro {
+            max-width: 760px;
+            margin: 12px 0 28px;
+            color: #526075;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        section {
+            display: grid;
+            gap: 16px;
+            padding: 20px;
+            border: 1px solid #d9e1ec;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 12px 28px rgba(23, 32, 51, 0.08);
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.18rem;
+        }
+
+        p {
+            margin: 0;
+            color: #526075;
+            line-height: 1.5;
+        }
+
+        pre {
+            min-height: 244px;
+            margin: 0;
+            overflow: auto;
+            padding: 14px;
+            border-radius: 8px;
+            background: #172033;
+            color: #eef2f7;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+
+        code,
+        .log {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button {
+            min-height: 42px;
+            border: 0;
+            border-radius: 8px;
+            padding: 0 14px;
+            background: #2563eb;
+            color: #ffffff;
+            font: inherit;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: #e7ebf0;
+            color: #172033;
+        }
+
+        button:hover {
+            filter: brightness(0.96);
+        }
+
+        .target {
+            width: 100%;
+            min-height: 52px;
+            border: 1px dashed #8fa0b7;
+            background: #f8fafc;
+            color: #172033;
+        }
+
+        .target.active {
+            border-color: #2563eb;
+            background: #edf4ff;
+        }
+
+        .log {
+            min-height: 84px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #eef2f7;
+            color: #344256;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding: 20px;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div>Hello server</div>
-    <button id="attach-one">Attach listener</button>
-    <button id="custom-button">Original event</button>
-    <button id="remove-event">Remove listener</button>
+    <main>
+        <h1>Before and after event cleanup</h1>
+        <p class="intro">
+            Native listeners need you to keep the same element, callback, and cleanup path.
+            easy-events keeps that small lifecycle in one place.
+        </p>
+
+        <div class="comparison">
+            <section>
+                <h2>Native addEventListener</h2>
+                <p>You manage the element lookup and callback reference yourself.</p>
+                <pre><code>const button = document.querySelector("#native-target");
+let nativeClickCount = 0;
+
+const nativeHandler = () => {
+  nativeClickCount += 1;
+};
+
+button?.addEventListener("click", nativeHandler);
+
+// Later...
+button?.removeEventListener("click", nativeHandler);</code></pre>
+                <button id="native-target" class="target">Click native target</button>
+                <div class="controls">
+                    <button id="native-attach">Attach native listener</button>
+                    <button id="native-remove" class="secondary">Remove native listener</button>
+                </div>
+                <div id="native-log" class="log">Native listener is not attached.</div>
+            </section>
+
+            <section>
+                <h2>easy-events</h2>
+                <p>The helper resolves the selector and gives you cleanup.</p>
+                <pre><code>import { easyEventListener } from "easy-events";
+
+let cleanup = easyEventListener("#easy-target", "click", () => {
+  easyClickCount += 1;
+});
+
+// Later...
+cleanup?.();
+
+// Or remove the managed listener directly.
+easyEventListener.remove("#easy-target", "click");</code></pre>
+                <button id="easy-target" class="target">Click easy-events target</button>
+                <div class="controls">
+                    <button id="easy-attach">Attach easy listener</button>
+                    <button id="easy-cleanup" class="secondary">Run cleanup</button>
+                    <button id="easy-remove" class="secondary">Remove by selector</button>
+                </div>
+                <div id="easy-log" class="log">easy-events listener is not attached.</div>
+            </section>
+        </div>
+    </main>
+
     <script type="module">
         import { easyEventListener } from '../dist/lib/index.js';
 
-        easyEventListener('#attach-one', 'click', () => {
-            console.log("attached");
+        const nativeTarget = document.querySelector('#native-target');
+        const easyTarget = document.querySelector('#easy-target');
+        const nativeLog = document.querySelector('#native-log');
+        const easyLog = document.querySelector('#easy-log');
 
-            easyEventListener('#custom-button', 'click', (e) => {
-                console.log(e, 'hi clicked');
-            });
+        let nativeClickCount = 0;
+        let nativeAttached = false;
+        let easyClickCount = 0;
+        let easyCleanup = null;
+
+        const updateNativeLog = (message) => {
+            nativeLog.textContent = [
+                message,
+                `Attached: ${nativeAttached ? 'yes' : 'no'}`,
+                `Clicks handled: ${nativeClickCount}`,
+            ].join('\n');
+            nativeTarget.classList.toggle('active', nativeAttached);
+        };
+
+        const updateEasyLog = (message) => {
+            const easyAttached = easyCleanup !== null;
+            easyLog.textContent = [
+                message,
+                `Attached: ${easyAttached ? 'yes' : 'no'}`,
+                `Clicks handled: ${easyClickCount}`,
+            ].join('\n');
+            easyTarget.classList.toggle('active', easyAttached);
+        };
+
+        const nativeHandler = () => {
+            nativeClickCount += 1;
+            updateNativeLog('Native handler ran.');
+        };
+
+        document.querySelector('#native-attach').addEventListener('click', () => {
+            if (!nativeAttached) {
+                nativeTarget.addEventListener('click', nativeHandler);
+                nativeAttached = true;
+            }
+
+            updateNativeLog('Native listener attached with stored callback.');
         });
 
-        easyEventListener('#remove-event', 'click', () => {
-            console.log('removed');
-
-            easyEventListener.remove('#custom-button', 'click');
+        document.querySelector('#native-remove').addEventListener('click', () => {
+            nativeTarget.removeEventListener('click', nativeHandler);
+            nativeAttached = false;
+            updateNativeLog('Native listener removed with the same callback.');
         });
+
+        const easyHandler = () => {
+            easyClickCount += 1;
+            updateEasyLog('easy-events handler ran.');
+        };
+
+        document.querySelector('#easy-attach').addEventListener('click', () => {
+            easyCleanup = easyEventListener('#easy-target', 'click', easyHandler);
+            updateEasyLog('easy-events listener attached and cleanup was returned.');
+        });
+
+        document.querySelector('#easy-cleanup').addEventListener('click', () => {
+            const removed = easyCleanup?.() ?? false;
+            easyCleanup = null;
+            updateEasyLog(`Cleanup called. Removed listener: ${removed ? 'yes' : 'no'}.`);
+        });
+
+        document.querySelector('#easy-remove').addEventListener('click', () => {
+            const removed = easyEventListener.remove('#easy-target', 'click');
+            easyCleanup = null;
+            updateEasyLog(`Selector removal called. Removed listener: ${removed ? 'yes' : 'no'}.`);
+        });
+
+        updateNativeLog('Native listener is not attached.');
+        updateEasyLog('easy-events listener is not attached.');
     </script>
 </body>
 
